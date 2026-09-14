@@ -1,4 +1,5 @@
 # WSL GPU Bridge
+![ci](https://github.com/Twyx22/wsl-gpu-bridge/actions/workflows/ci.yml/badge.svg)
 
 Détecte si FP8 Blackwell `sm_120` (RTX 5090) est réellement exposé sous WSL2 via `dxgkrnl`. Fallback auto si émulé.
 
@@ -22,18 +23,20 @@ python3 wsl_gpu_bridge.py recommend --dtype fp8 --params 14 --json
 | RTX 5090 / Blackwell | sm_120 | oui si CUDA≥12.8 + /dev/dxg | BF16 |
 | RTX 4090 / Ada | sm_89 | non (pas de FP8 natif) | BF16 |
 | H100 / Hopper | sm_90 | oui si CUDA≥12.8 | BF16 |
+| MI300-MI350 / CDNA | gfx942/950 | oui via ROCm | BF16 |
+| Intel Data Center / Arc | xpu | non (non vérifié) | BF16 |
 | Autre / CPU | — | non | INT4 CPU (llama.cpp) |
 
-Règle : `FP8 → BF16 → INT4`. Jamais de crash, toujours un mode runnable.
+Règle : `FP8 → BF16 → INT4`. Jamais de crash, toujours un mode runnable. `tok_s`/`tok_s_sim` valent `null` si la VRAM est inconnue.
 
 ## Exemple
 
 ```json
 // detect
-{"gpu": "NVIDIA GeForce RTX 5090", "sm": 120, "cuda": "12.8", "fp8_ok": true, "wsl": true, "dxg": true}
+{"gpu": "NVIDIA GeForce RTX 5090", "sm": 120, "vendor": "nvidia", "arch": "sm_120", "tool": "nvidia-smi", "cuda": "12.8", "fp8_ok": true, "wsl": true, "dxg": true}
 ```
 
 ## Roadmap
 - [x] flag `--json` (`recommend --json`), cache detect (TTL 60s, `--no-cache` pour bypass)
-- [x] bench réel torch (`bench --real` → `real:{matmul_ms,tflops}`, `real:null` + `real_why` sinon)
+- [x] bench réel torch (`bench --real` → `real:{matmul_ms,tflops}`, `real:null` + `real_why` sinon ; `tok_s:null` si VRAM inconnue)
 - [x] support ROCm/Intel (`detect_gpu()` multi-backend, `arch_of()` → vendor/arch, FP8 gfx942/gfx950 via ROCm)
