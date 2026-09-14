@@ -36,7 +36,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4.2.2
-      - uses: anchore/sbom-action@v0.20.3
+      - uses: anchore/sbom-action@v0.24.2
         with:
           format: spdx-json
           output-file: sbom.spdx.json
