@@ -5,3 +5,6 @@ venv/
 dist/
 *.etl
 *.zip
+AGENTS.md
+CLAUDE.md
+audit.log

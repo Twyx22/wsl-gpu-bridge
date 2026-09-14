@@ -10,7 +10,9 @@ Problème : `torch.cuda.get_device_capability()` retourne `(12,0)` mais FP8 tomb
 python3 wsl_gpu_bridge.py detect
 python3 wsl_gpu_bridge.py check-fp8
 python3 wsl_gpu_bridge.py bench --params 14 --dtype fp8
+python3 wsl_gpu_bridge.py bench --params 14 --dtype fp8 --real  # mesure torch si CUDA dispo
 python3 wsl_gpu_bridge.py recommend --dtype fp8 --params 14
+python3 wsl_gpu_bridge.py recommend --dtype fp8 --params 14 --json
 ```
 
 ## GPUs
@@ -32,6 +34,6 @@ Règle : `FP8 → BF16 → INT4`. Jamais de crash, toujours un mode runnable.
 ```
 
 ## Roadmap
-- [ ] flag `--json`, cache detect
-- [ ] bench réel torch (si installé)
-- [ ] support ROCm/Intel
+- [x] flag `--json` (`recommend --json`), cache detect (TTL 60s, `--no-cache` pour bypass)
+- [x] bench réel torch (`bench --real` → `real:{matmul_ms,tflops}`, `real:null` + `real_why` sinon)
+- [x] support ROCm/Intel (`detect_gpu()` multi-backend, `arch_of()` → vendor/arch, FP8 gfx942/gfx950 via ROCm)
