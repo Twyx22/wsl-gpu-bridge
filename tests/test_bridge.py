@@ -32,6 +32,11 @@ class T(unittest.TestCase):
     def test_bench_order(self):
         self.assertGreater(b.sim_toks(7, 16, "int4"), b.sim_toks(7, 16, "bf16"))
 
+    def test_toks_unknown_mem(self):
+        self.assertIsNone(b.sim_toks(7, 0, "fp8"))
+        txt = b.recommend({"gpu": "AMD Instinct MI300X", "mem_mb": 0, "fp8_ok": True, "fp8_why": "x"}, "fp8", 14)
+        self.assertIn("inconnu", txt)
+
     def test_real_bench_fallback(self):
         r = b.real_bench()
         self.assertTrue(r is None or isinstance(r, dict))

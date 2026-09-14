@@ -116,6 +116,8 @@ def fallback(req, ok):
 
 
 def sim_toks(params_b=7.0, mem_gb=16.0, dtype="bf16"):
+    if (mem_gb or 0) <= 0:
+        return None
     f = {"fp8": 1.0, "bf16": 0.62, "fp16": 0.62, "int4": 1.7}.get(dtype.lower(), 0.62)
     return round(2000.0 / max(params_b, 0.1) * f * min(mem_gb, 80) / 16, 1)
 
@@ -198,11 +200,12 @@ def recommend(info, dtype="fp8", params_b=7.0):
         return "CPU seul: petit modele GGUF int4, Ollama/llama.cpp."
     eff = fallback(dtype, info["fp8_ok"])
     tps = sim_toks(params_b, info.get("mem_mb", 0) / 1024, eff)
+    tps_txt = f"{tps} tok/s simules" if tps is not None else "debit inconnu (VRAM non detectee)"
     if info["fp8_ok"]:
-        return f"Utilise {eff.upper()} ({tps} tok/s simules, {params_b}B). vLLM/TensorRT-LLM ok."
+        return f"Utilise {eff.upper()} ({tps_txt}, {params_b}B). vLLM/TensorRT-LLM ok."
     if info.get("mem_mb", 0) < 12000:
-        return f"Fallback {eff.upper()}->INT4 recommande ({tps} tok/s simules). Raison: {info['fp8_why']}"
-    return f"Fallback auto {dtype.upper()}->{eff.upper()} ({tps} tok/s simules). Raison: {info['fp8_why']}"
+        return f"Fallback {eff.upper()}->INT4 recommande ({tps_txt}). Raison: {info['fp8_why']}"
+    return f"Fallback auto {dtype.upper()}->{eff.upper()} ({tps_txt}). Raison: {info['fp8_why']}"
 
 
 def main(argv=None):
@@ -228,6 +231,8 @@ def main(argv=None):
     elif a.cmd == "bench":
         mem = info.get("mem_mb", 16384) / 1024
         out = {"dtype": a.dtype, "tok_s": sim_toks(a.params, mem, a.dtype)}
+        if out["tok_s"] is None:
+            out["tok_s_why"] = "VRAM non detectee"
         if a.real:
             real = real_bench()
             out["real"] = real
@@ -259,7 +264,9 @@ def _selfcheck():
     assert not fp8_usable(89, (12, 8), True, True)[0] and not fp8_usable(120, (12, 4), True, False)[0]
     assert fallback("fp8", False) == "bf16" and fallback("fp8", True) == "fp8"
     assert sim_toks(7, 16, "int4") > sim_toks(7, 16, "bf16") > 0
+    assert sim_toks(7, 0, "fp8") is None
     assert "CPU" in recommend({})
+    assert "inconnu" in recommend({"gpu": "AMD Instinct MI300X", "mem_mb": 0, "fp8_ok": True, "fp8_why": "x"})
     _rb = real_bench()
     assert _rb is None or isinstance(_rb, dict)
     global CACHE_PATH
