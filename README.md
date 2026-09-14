@@ -40,3 +40,8 @@ Règle : `FP8 → BF16 → INT4`. Jamais de crash, toujours un mode runnable. `t
 - [x] flag `--json` (`recommend --json`), cache detect (TTL 60s, `--no-cache` pour bypass)
 - [x] bench réel torch (`bench --real` → `real:{matmul_ms,tflops}`, `real:null` + `real_why` sinon ; `tok_s:null` si VRAM inconnue)
 - [x] support ROCm/Intel (`detect_gpu()` multi-backend, `arch_of()` → vendor/arch, FP8 gfx942/gfx950 via ROCm)
+
+## Sécurité
+Politique : [SECURITY.md](SECURITY.md). Signalement privé via `Security > Report a vulnerability` — pas d'issue publique.
+[![CodeQL](https://github.com/Twyx22/wsl-gpu-bridge/actions/workflows/codeql.yml/badge.svg)](https://github.com/Twyx22/wsl-gpu-bridge/actions/workflows/codeql.yml) [![security](https://github.com/Twyx22/wsl-gpu-bridge/actions/workflows/security.yml/badge.svg)](https://github.com/Twyx22/wsl-gpu-bridge/actions/workflows/security.yml)
+Dependabot (pip + actions, hebdo), `pip-audit` + `gitleaks` en CI, SBOM SPDX par run. Stdlib only, surface minimale.

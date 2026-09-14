@@ -1,0 +1,49 @@
+name: security
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  secret-scan:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2.13.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_VERSION: 8.24.0
+  pip-audit:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-python@v5.4.0
+        with:
+          python-version: "3.12.7"
+      - uses: pypa/gh-action-pip-audit@v1.1.0
+        with:
+          vulnerability-service: osv
+  sbom:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: anchore/sbom-action@v0.20.3
+        with:
+          format: spdx-json
+          output-file: sbom.spdx.json
+          syft-version: v1.26.0
+      - uses: actions/upload-artifact@v4.6.0
+        with:
+          name: sbom-spdx
+          path: sbom.spdx.json
+          retention-days: 30
