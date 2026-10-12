@@ -41,7 +41,7 @@ jobs:
           format: spdx-json
           output-file: sbom.spdx.json
           syft-version: v1.26.0
-      - uses: actions/upload-artifact@v7.0.1
+      - uses: actions/upload-artifact@v7.0.2
         with:
           name: sbom-spdx
           path: sbom.spdx.json
